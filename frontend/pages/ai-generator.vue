@@ -51,23 +51,54 @@
           <div style="font-size:13px;color:#64748B;">Answer questions in plain business language. AI translates your answers into planogram inputs and generates candidates automatically.</div>
         </div>
         <!-- Not started -->
-        <div v-if="!fullChatStarted" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:40px;">
-          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#7C3AED);display:flex;align-items:center;justify-content:center;">
-            <Sparkles :size="28" color="white"/>
-          </div>
-          <div style="text-align:center;max-width:400px;">
-            <div style="font-size:18px;font-weight:700;color:#0F172A;margin-bottom:8px;">Configure with AI Chat</div>
-            <div style="font-size:14px;color:#64748B;line-height:1.7;">Answer a few questions in plain business language. The AI will set up your asset, SKU pool, objective weights, and placement rules — then generate 3 planogram candidates for you.</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:400px;">
-            <button v-for="ex in QUICK_STARTS" :key="ex" @click="startFullChat(ex)"
-              style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 14px;font-size:13px;color:#334155;cursor:pointer;text-align:left;transition:all 0.12s;"
-              @mouseenter="($event.currentTarget as HTMLElement).style.borderColor='#3B82F6'"
-              @mouseleave="($event.currentTarget as HTMLElement).style.borderColor='#E2E8F0'">
-              "{{ ex }}"
+        <div v-if="!fullChatStarted" style="flex:1;overflow-y:auto;padding:28px 24px;">
+          <div style="max-width:500px;margin:0 auto;">
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3B82F6,#7C3AED);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <Sparkles :size="14" color="white"/>
+                </div>
+                <div style="font-size:16px;font-weight:700;color:#0F172A;">What would you like to do?</div>
+              </div>
+              <div style="font-size:13px;color:#64748B;padding-left:42px;">Pick a category below or start from scratch.</div>
+            </div>
+
+            <!-- Accordion sections -->
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+              <div v-for="sec in CHAT_SECTIONS" :key="sec.key"
+                :style="`border:1px solid ${activeSection===sec.key?'#3B82F6':'#E2E8F0'};border-radius:10px;overflow:hidden;transition:border-color 0.15s;`">
+                <!-- Header -->
+                <button @click="activeSection=activeSection===sec.key?null:sec.key"
+                  style="width:100%;display:flex;align-items:center;gap:10px;padding:11px 14px;background:white;border:none;cursor:pointer;text-align:left;"
+                  :style="activeSection===sec.key?'background:#EFF6FF;':''">
+                  <span style="font-size:16px;line-height:1;flex-shrink:0;">{{ sec.icon }}</span>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#0F172A;">{{ sec.label }}</div>
+                    <div style="font-size:11px;color:#94A3B8;margin-top:1px;">{{ sec.desc }}</div>
+                  </div>
+                  <ChevronDown :size="13" :style="`flex-shrink:0;color:#94A3B8;transition:transform 0.15s;transform:rotate(${activeSection===sec.key?'0':'−90'}deg)`"/>
+                </button>
+                <!-- Items -->
+                <div v-if="activeSection===sec.key" style="border-top:1px solid #E2E8F0;">
+                  <button v-for="item in sec.items" :key="item.prompt" @click="startFullChat(item.prompt)"
+                    style="width:100%;display:flex;align-items:flex-start;gap:10px;padding:9px 14px;background:white;border:none;border-top:1px solid #F8FAFC;cursor:pointer;text-align:left;transition:background 0.1s;"
+                    @mouseenter="($event.currentTarget as HTMLElement).style.background='#F8FAFC'"
+                    @mouseleave="($event.currentTarget as HTMLElement).style.background='white'">
+                    <span style="font-size:15px;line-height:1;flex-shrink:0;margin-top:1px;">{{ item.icon }}</span>
+                    <div>
+                      <div style="font-size:13px;font-weight:500;color:#334155;">{{ item.label }}</div>
+                      <div style="font-size:11px;color:#94A3B8;margin-top:1px;">{{ item.hint }}</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button @click="startFullChat(null)"
+              style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#0F172A;color:white;border:none;border-radius:9px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;">
+              <Sparkles :size="13"/> Start from scratch
             </button>
           </div>
-          <button @click="startFullChat(null)" style="background:#0F172A;color:white;border:none;border-radius:8px;padding:11px 28px;font-size:13px;font-weight:600;cursor:pointer;">Start from scratch →</button>
         </div>
         <!-- Chat active -->
         <template v-else>
@@ -177,6 +208,28 @@
                 <Sparkles :size="13" color="#3B82F6"/>
                 <span style="font-size:12px;color:#1D4ED8;">Suggested for <strong>{{ selectedAsset?.type }}</strong> — adjust as needed</span>
               </div>
+
+              <!-- Sales signal nudge -->
+              <div v-if="!salesNudgeDismissed && salesNudge.length > 0"
+                style="display:flex;align-items:flex-start;gap:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;margin-bottom:14px;">
+                <TrendingUp :size="14" color="#D97706" style="flex-shrink:0;margin-top:1px;"/>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:4px;">Sales signal — high performers not in your pool</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <button v-for="s in salesNudge" :key="s.cat"
+                      @click="selectedCats[s.cat]=true;salesNudgeDismissed=true"
+                      style="display:flex;align-items:center;gap:5px;background:white;border:1px solid #FCD34D;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;color:#78350F;cursor:pointer;">
+                      <div :style="`width:6px;height:6px;border-radius:50%;background:${s.color};`"></div>
+                      {{ s.name }} · <span style="color:#D97706;">Add {{ s.cat }}</span>
+                    </button>
+                  </div>
+                </div>
+                <button @click="salesNudgeDismissed=true"
+                  style="background:transparent;border:none;cursor:pointer;color:#D97706;padding:0;flex-shrink:0;">
+                  <X :size="13"/>
+                </button>
+              </div>
+
               <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
                 <button v-for="cat in CATS" :key="cat" @click="selectedCats[cat]=!selectedCats[cat]"
                   :style="`display:flex;flex-direction:column;gap:6px;padding:14px;border:1.5px solid ${selectedCats[cat]?'#3B82F6':'#E2E8F0'};border-radius:10px;background:${selectedCats[cat]?'#EFF6FF':'white'};cursor:pointer;text-align:left;transition:all 0.12s;`">
@@ -503,7 +556,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sparkles, ChevronLeft, Check, X, CheckCircle } from 'lucide-vue-next'
+import { Sparkles, ChevronLeft, Check, X, CheckCircle, TrendingUp } from 'lucide-vue-next'
 import { usePlanogramStore } from '~/stores/planogram'
 
 definePageMeta({ layout: 'default' })
@@ -561,11 +614,52 @@ const CONTEXT_TOGGLES = [
   { field:'competitorCounter', label:'Counter Competitor', desc:'Boosts KF/Heineken hero SKUs in zones where competitor presence is high.' },
 ]
 
-const QUICK_STARTS = [
-  'New launch — KF Ultra needs strong visibility',
-  'RSM visit next week — need full compliance',
-  'Counter competitor gaining shelf space',
-  'Seasonal push — premium lager priority',
+const CHAT_SECTIONS = [
+  {
+    key: 'build',
+    icon: '🏗️',
+    label: 'Build a new planogram',
+    desc: 'AI guides you through fixture, SKU pool and objectives — config appears on the right',
+    items: [
+      { icon: '💰', label: 'Revenue push',           hint: 'Maximize margin on premium SKUs',                      prompt: 'Revenue push — maximize margin on premium SKUs' },
+      { icon: '🚀', label: 'New product launch',     hint: 'KF Ultra needs strong shelf visibility',               prompt: 'New launch — KF Ultra needs strong shelf visibility' },
+      { icon: '✅', label: 'RSM audit visit',        hint: 'Full compliance, mandatory SKUs at eye level',         prompt: 'RSM visit next week — full compliance, mandatory SKUs at eye level' },
+      { icon: '⚔️', label: 'Counter competitor',     hint: 'Rival gaining shelf space in South region',            prompt: 'Counter competitor gaining shelf space in South region' },
+    ],
+  },
+  {
+    key: 'insights',
+    icon: '📊',
+    label: 'Get insights & analytics',
+    desc: 'Ask about planogram performance, SKU coverage and compliance gaps',
+    items: [
+      { icon: '🏆', label: 'Top performing planograms',   hint: 'Ranked by compliance score and utilization',           prompt: 'What are my top performing planograms?' },
+      { icon: '🔍', label: 'Missing high-value SKUs',     hint: 'Trending SKUs absent from active planograms',          prompt: 'Which high-performing SKUs are missing from my active planograms?' },
+      { icon: '📍', label: 'Compliance by region',        hint: 'Compliance score overview across North/South/East/West', prompt: 'Show me compliance status across all regions' },
+    ],
+  },
+  {
+    key: 'edit',
+    icon: '✏️',
+    label: 'Edit or update a planogram',
+    desc: 'Modify an existing layout, add SKUs or adjust facings',
+    items: [
+      { icon: '🔧', label: 'How to edit a planogram',       hint: 'Step-by-step guide to modifying an active layout',   prompt: 'How do I edit an existing planogram?' },
+      { icon: '➕', label: 'Add a new SKU to a planogram',  hint: 'Walk me through adding a SKU to an existing layout', prompt: 'How do I add a new SKU to an existing planogram?' },
+      { icon: '📐', label: 'Adjust SKU facings',            hint: 'Increase or decrease facing counts',                 prompt: 'How do I adjust SKU facings in a planogram?' },
+    ],
+  },
+  {
+    key: 'ask',
+    icon: '💬',
+    label: 'Ask a question',
+    desc: 'Get answers about strategy, AI scoring or shelf best practices',
+    items: [
+      { icon: '🤖', label: 'How does AI scoring work?',          hint: 'Understand how the algorithm arranges SKUs',       prompt: 'How does the AI scoring algorithm work?' },
+      { icon: '📦', label: 'Visicooler vs Gondola — which to use?', hint: 'When to use each fixture type',               prompt: 'What is the difference between a Visicooler and Gondola?' },
+      { icon: '👁️', label: 'Eye-level placement best practices', hint: 'Which SKUs should go at eye level and why',      prompt: 'What are best practices for eye-level SKU placement?' },
+    ],
+  },
 ]
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -591,6 +685,12 @@ const objConfig = reactive<Record<string,any>>({
 })
 const candidates = ref<any[]|null>(null)
 const generating = ref(false)
+const salesNudgeDismissed = ref(false)
+
+const salesNudge = computed(() =>
+  store.skus.filter(s => s.trending && !selectedCats[s.cat])
+    .filter((s, i, arr) => arr.findIndex(x => x.cat === s.cat) === i)
+)
 
 // Obj chat
 const objChatStarted = ref(false)
@@ -599,6 +699,7 @@ const objChatInput = ref('')
 const objChatLoading = ref(false)
 const objChatReady = ref(false)
 const objChatScrollRef = ref<HTMLElement|null>(null)
+const objChatTurn = ref(0)
 
 // Full chat
 const fullChatStarted = ref(false)
@@ -607,6 +708,9 @@ const fullChatInput = ref('')
 const fullChatLoading = ref(false)
 const fullChatReady = ref(false)
 const fullChatScrollRef = ref<HTMLElement|null>(null)
+const fullChatTurn = ref(0)
+const activeSection = ref<string|null>(null)
+const chatIntent = ref<'build'|'insights'|'edit'|'ask'>('build')
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
@@ -796,78 +900,42 @@ function handleSelect(_c: any) {
 
 // ─── Objective chat ───────────────────────────────────────────────────────────
 
-function plannerPrompt() {
-  const poolNames = store.skus.filter(s => poolIds.value.includes(s.id)).map(s => s.name).join(', ')
-  const w = weights.value
-  const skuMap = JSON.stringify(Object.fromEntries(store.skus.map(s => [s.name, s.id])))
-  return `You are a planogram objective assistant for United Breweries' modern trade merchandising platform. Your job: gather planogram configuration inputs through a focused, friendly conversation.
-
-SKUs available in this planogram's pool: ${poolNames}
-Current KPI weights: Revenue ${w.revenue}%, SOS ${w.sos}%, Compliance ${w.compliance}%, Eye-Level ${w.eyeLevel}%
-
-Collect these inputs through conversation:
-1. Business goal / context (new launch? RSM visit? counter competitor? seasonal push?)
-2. Mandatory SKUs — must be placed, eye-level priority, validation error if missing
-3. Eye-Level Heroes — must appear specifically at row 0 (eye level)
-4. New Launch SKUs — recently launched, gets +1 facing boost and zone priority
-5. Priority SKUs — preferred but not mandatory
-6. Excluded SKUs — supply issue, regional, seasonal
-7. Brand arrangement — should same brand be blocked together?
-
-Rules:
-- Ask ONE short question at a time
-- Use business language, not technical terms
-- Keep each response to 1-2 sentences + your question
-- When you identify a config value, output on its own line exactly:
-  CONFIG:{"field":"mandatoryIds","value":[1,2],"label":"Kingfisher Prem, Heineken 330ml"}
-  Field names: mandatoryIds, eyeLevelIds, newLaunchIds, priorityIds, excludedIds, brandBlocking (free/block/category), rsmMode (true/false), competitorCounter (true/false)
-  Values for *Ids fields must be arrays of SKU IDs from this map: ${skuMap}
-- After 5-6 productive exchanges output: READY:true
-
-Start by asking what the main business goal is for this planogram.`
-}
-
-function parseAndApplyObjConfig(text: string) {
-  const configRe = /CONFIG:\{[^\n]+\}/g
-  const actions = text.match(configRe) || []
-  actions.forEach(a => {
-    try {
-      const data = JSON.parse(a.replace('CONFIG:', ''))
-      if (data.field) objConfig[data.field] = data.value
-    } catch {}
-  })
-  if (text.includes('READY:true')) objChatReady.value = true
-  return text.replace(/CONFIG:\{[^\n]+\}/g, '').replace('READY:true', '').trim()
-}
+const OBJ_CHAT_SCRIPT = [
+  { delay: 800,  msg: "What's the main business goal for this planogram — revenue push, RSM audit, new launch, or compliance?" },
+  { delay: 1100, msg: "Revenue push — got it. I'll optimize for margin and sell-through. Should Kingfisher Prem 650ml and Heineken 330ml be mandatory must-haves placed at eye level?",
+    apply: () => { objConfig.mandatoryIds = [1, 3]; objConfig.eyeLevelIds = [1, 3] } },
+  { delay: 1000, msg: "KF Ultra 330ml is trending in recent sales data — not currently in the mandatory list but outperforming its category. Flag it as a new launch with a +1 facing boost?",
+    apply: () => { objConfig.newLaunchIds = [5] } },
+  { delay: 900,  msg: "Any SKUs to exclude — supply constraints, regional restrictions, seasonal delists? If nothing, I'll keep the full pool active.",
+    apply: () => { objConfig.excludedIds = [] } },
+  { delay: 1200, msg: "Setting KPI weights to Revenue 55%, SOS 20%, Compliance 15%, Eye-level 10%. Blocking same brands together on shelf — lifts brand visibility ~12%. Locking that in.",
+    apply: () => { weights.value = { revenue: 55, sos: 20, compliance: 15, eyeLevel: 10 }; objConfig.brandBlocking = 'block' } },
+  { delay: 1000, msg: "Objective configured. Mandatory heroes at eye level, KF Ultra boosted, revenue-first weights, brand blocking on. Ready to generate your planogram candidates.",
+    ready: true },
+]
 
 async function startObjChat() {
   objChatStarted.value = true
-  await sendObjChatApi([{ role: 'user', content: "Let's start." }], true)
+  objChatTurn.value = 0
+  await mockObjChatStep()
 }
 
 async function sendObjChat(userText: string) {
   if (!userText.trim()) return
-  const history = [...objChatMessages.value]
-  objChatMessages.value = [...history, { role: 'user', content: userText }]
+  objChatMessages.value = [...objChatMessages.value, { role: 'user', content: userText }]
   objChatInput.value = ''
-  await sendObjChatApi([...history, { role: 'user', content: userText }], false)
+  await mockObjChatStep()
 }
 
-async function sendObjChatApi(apiMessages: any[], _isInit: boolean) {
+async function mockObjChatStep() {
   objChatLoading.value = true
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 400, system: plannerPrompt(), messages: apiMessages })
-    })
-    const data = await res.json()
-    const raw = data.content?.[0]?.text || 'Sorry, something went wrong. Please try again.'
-    const clean = parseAndApplyObjConfig(raw)
-    objChatMessages.value = [...objChatMessages.value, { role: 'assistant', content: clean }]
-  } catch {
-    objChatMessages.value = [...objChatMessages.value, { role: 'assistant', content: 'Connection issue — please try again.' }]
-  }
+  const turn = objChatTurn.value
+  const script = OBJ_CHAT_SCRIPT[Math.min(turn, OBJ_CHAT_SCRIPT.length - 1)]
+  await new Promise(r => setTimeout(r, script.delay))
+  if (script.apply) script.apply()
+  if (script.ready) objChatReady.value = true
+  objChatMessages.value = [...objChatMessages.value, { role: 'assistant', content: script.msg }]
+  objChatTurn.value = Math.min(turn + 1, OBJ_CHAT_SCRIPT.length - 1)
   objChatLoading.value = false
   await nextTick()
   if (objChatScrollRef.value) objChatScrollRef.value.scrollTop = objChatScrollRef.value.scrollHeight
@@ -875,102 +943,194 @@ async function sendObjChatApi(apiMessages: any[], _isInit: boolean) {
 
 // ─── Full page chat ───────────────────────────────────────────────────────────
 
-function fullChatSystemPrompt() {
-  const assetList = store.assets.map(a => `${a.name}(id:${a.id},type:${a.type})`).join(', ')
-  const skuList = store.skus.map(s => `${s.name}(id:${s.id},cat:${s.cat})`).join(', ')
-  const w = weights.value
-  return `You are an expert planogram configuration assistant for United Breweries' AI merchandising platform.
-Your job is to configure a planogram through a friendly, focused conversation — asking one short question at a time.
+const chatCtx = reactive({ goal: 'revenue', assetId: 1, assetName: 'Beer Cooler BC-6D', assetType: 'Visicooler' })
 
-Available assets: ${assetList}
-Available SKUs: ${skuList}
-Current KPI weights: Revenue ${w.revenue}%, SOS ${w.sos}%, Compliance ${w.compliance}%, Eye-Level ${w.eyeLevel}%
+type FlowFn = (text: string) => { msg: string; apply?: () => void; ready?: boolean }
 
-COLLECT THESE INPUTS (in order, one question per message):
-1. Business context / goal
-2. Which asset/fixture to use
-3. Which SKU categories to include in the pool
-4. Mandatory SKUs (must place, eye level first)
-5. Eye-level hero SKUs
-6. New launch SKUs (gets +1 facing boost)
-7. Priority SKUs
-8. Excluded SKUs
-9. KPI priority adjustment
-10. Brand arrangement preference (free / block by brand / block by category)
-11. Any special flags (RSM visit mode, counter competitor)
+const CHAT_FLOW: FlowFn[] = [
+  // 0: parse goal → ask fixture
+  (text) => {
+    let goal = 'revenue'
+    let ack = "Revenue push — I'll optimize for margin and sell-through velocity."
+    if (/launch|new.?product|introduc/i.test(text))  { goal = 'launch';     ack = "New launch — launch SKUs will get facing boosts and priority zones."        }
+    else if (/rsm|visit/i.test(text))                { goal = 'rsm';        ack = "RSM visit mode on — mandatory SKUs get guaranteed eye-level placement."      }
+    else if (/compli|audit/i.test(text))             { goal = 'compliance'; ack = "Compliance-first — I'll prioritize an audit-ready shelf arrangement."        }
+    chatCtx.goal = goal
+    return {
+      msg: `${ack}\n\nWhich fixture are you building for?\n\n• Beer Cooler BC-6D — Visicooler, 6 shelves (North)\n• Gondola G-4S — 4 shelves (South)\n• End Cap EC-2 — 3 shelves (West)\n• Counter Display CD-1 — 2 shelves (East)\n• Rack R-6S — 6 shelves (North)`,
+      apply: () => { if (goal === 'rsm') objConfig.rsmMode = true },
+    }
+  },
+  // 1: parse fixture → confirm SKU pool
+  (text) => {
+    let id = 1; let name = 'Beer Cooler BC-6D'; let type = 'Visicooler'
+    if (/gondola/i.test(text))        { id = 2; name = 'Gondola G-4S';         type = 'Gondola'  }
+    else if (/end.?cap/i.test(text))  { id = 3; name = 'End Cap EC-2';         type = 'End Cap'  }
+    else if (/counter/i.test(text))   { id = 4; name = 'Counter Display CD-1'; type = 'Counter'  }
+    else if (/rack/i.test(text))      { id = 5; name = 'Rack R-6S';            type = 'Rack'     }
+    chatCtx.assetId = id; chatCtx.assetName = name; chatCtx.assetType = type
+    const cats = ASSET_CAT_MAP[type] || ['Lager', 'Premium']
+    const count = store.skus.filter(s => cats.includes(s.cat)).length
+    return {
+      msg: `${name} — great choice for premium visibility. For a ${type}, I'm suggesting ${cats.join(', ')} as the SKU pool — ${count} SKUs to arrange.\n\nWant to add any other categories? Options: Draught, Radler, N/A. Or say "looks good" to continue.`,
+      apply: () => { const a = store.assets.find(a => a.id === id); if (a) selectAsset(a) },
+    }
+  },
+  // 2: handle pool additions → ask mandatory SKUs
+  (text) => {
+    const extra: string[] = []
+    if (/draught/i.test(text))               extra.push('Draught')
+    if (/radler/i.test(text))                extra.push('Radler')
+    if (/n[\/.\\-]?a|non.?alc/i.test(text)) extra.push('N/A')
+    const base = ASSET_CAT_MAP[chatCtx.assetType] || ['Lager', 'Premium']
+    const count = store.skus.filter(s => [...base, ...extra].includes(s.cat)).length
+    const poolNote = extra.length ? `Added ${extra.join(', ')} — pool is now ${count} SKUs.` : `Pool confirmed at ${count} SKUs.`
+    return {
+      msg: `${poolNote}\n\nFor mandatory SKUs, I'm flagging Kingfisher Prem 650ml and Heineken 330ml as must-haves. KF Ultra 330ml is also trending in recent sales data but underrepresented on shelf.\n\nShould I add KF Ultra as an eye-level hero? (yes / no)`,
+      apply: () => { extra.forEach(c => { selectedCats[c] = true }) },
+    }
+  },
+  // 3: handle hero → suggest KPI weights
+  (text) => {
+    const addHero = !/\bno\b|skip|don.?t/i.test(text)
+    const heroNote = addHero ? "KF Ultra flagged as eye-level hero." : "Mandatory set: Kingfisher Prem + Heineken."
+    const wMap: Record<string, { revenue:number; sos:number; compliance:number; eyeLevel:number }> = {
+      revenue:    { revenue: 55, sos: 20, compliance: 15, eyeLevel: 10 },
+      launch:     { revenue: 15, sos: 50, compliance: 20, eyeLevel: 15 },
+      rsm:        { revenue: 20, sos: 15, compliance: 55, eyeLevel: 10 },
+      compliance: { revenue: 15, sos: 15, compliance: 60, eyeLevel: 10 },
+    }
+    const w = wMap[chatCtx.goal]
+    return {
+      msg: `${heroNote}\n\nFor KPI weights, I'm suggesting Revenue ${w.revenue}%, SOS ${w.sos}%, Compliance ${w.compliance}%, Eye-level ${w.eyeLevel}% — tuned for your goal. Does that work, or want to adjust any?`,
+      apply: () => {
+        objConfig.mandatoryIds = [1, 3]
+        objConfig.eyeLevelIds  = addHero ? [5] : []
+        if (addHero) objConfig.priorityIds = [2]
+      },
+    }
+  },
+  // 4: handle weight confirmation → ask brand arrangement
+  (text) => {
+    const wMap: Record<string, { revenue:number; sos:number; compliance:number; eyeLevel:number }> = {
+      revenue:    { revenue: 55, sos: 20, compliance: 15, eyeLevel: 10 },
+      launch:     { revenue: 15, sos: 50, compliance: 20, eyeLevel: 15 },
+      rsm:        { revenue: 20, sos: 15, compliance: 55, eyeLevel: 10 },
+      compliance: { revenue: 15, sos: 15, compliance: 60, eyeLevel: 10 },
+    }
+    return {
+      msg: `KPI weights locked in.\n\nLast thing — brand arrangement:\n\n• Block by brand — Kingfisher and Heineken in dedicated shelf zones (better brand impact)\n• Arrange freely — sorted by category for natural shopper flow\n\nWhich do you prefer?`,
+      apply: () => { weights.value = wMap[chatCtx.goal] },
+    }
+  },
+  // 5: handle brand → summary + ready
+  (text) => {
+    const blocking = /free|open|categor/i.test(text) ? 'free' : 'block'
+    const blockNote = blocking === 'block'
+      ? 'Brand blocking on — dedicated zones for Kingfisher and Heineken.'
+      : 'Free arrangement — SKUs sorted by category flow.'
+    const cats = Object.keys(selectedCats).filter(c => selectedCats[c])
+    const skuCount = store.skus.filter(s => cats.includes(s.cat)).length
+    return {
+      msg: `${blockNote}\n\nAll configured! Here's your summary:\n\n• Fixture: ${chatCtx.assetName}\n• SKU pool: ${skuCount} SKUs (${cats.join(', ')})\n• Mandatory: Kingfisher Prem 650ml + Heineken 330ml\n• KPI: goal-optimized weights\n• Brand: ${blocking === 'block' ? 'blocked by brand' : 'free arrangement'}\n\nHit "Generate now" above to create your planogram candidates.`,
+      apply: () => { objConfig.brandBlocking = blocking },
+      ready: true,
+    }
+  },
+]
 
-RULES:
-- Ask ONE question at a time — keep each response under 3 sentences
-- Use plain business language
-- When you've captured a value, output CONFIG action on its own line:
-  CONFIG:{"field":"assetId","value":1}
-  CONFIG:{"field":"mandatoryIds","value":[1,2,3]}
-  Field reference: assetId (number), selectedCatKeys (array of category names from ["Lager","Strong","Premium","N/A","Draught","Light","Radler"]), mandatoryIds/eyeLevelIds/newLaunchIds/priorityIds/excludedIds (arrays of SKU IDs), weights ({revenue,sos,compliance,eyeLevel} summing to 100), brandBlocking ("free"|"block"|"category"), rsmMode/competitorCounter (boolean)
-  SKU IDs: ${skuList}
-- After collecting essential inputs (asset + pool + mandatory), output: READY:true
-- If user says "generate", output: GENERATE:true
+const STATIC_RESPONSES: Record<string, string> = {
+  'What are my top performing planograms?':
+    `Here are your top planograms by compliance score:\n\n🥇 KF Premium Beer Cooler — 94% compliance, 87% utilization (North, Active)\n🥈 Heineken Gondola South — 91% compliance, 82% utilization (South, Active)\n🥉 Premium Shelf Q1 FY26 — 88% compliance, 79% utilization (West, Active)\n\nKF Premium Beer Cooler leads because all mandatory SKUs are placed and utilization is near-optimal. The South planogram is slightly behind — 2 priority SKUs are at sub-optimal positions.\n\nWant me to build a similar high-compliance planogram for another region?`,
 
-Start by warmly greeting the user and asking about the business context/goal for this planogram.`
+  'Which high-performing SKUs are missing from my active planograms?':
+    `Based on sales signal data, 2 trending SKUs have no active planogram coverage:\n\n📈 KF Ultra 330ml (Premium) — trending in South region, absent from all active planograms\n📈 KF Radler 330ml (Radler) — rising velocity in West, only in 1 draft (not yet live)\n\nThese 2 SKUs represent an estimated 8–12% revenue opportunity if added to active layouts. Want me to build a planogram that includes them as eye-level heroes?`,
+
+  'Show me compliance status across all regions':
+    `Regional compliance overview — Q1 FY26:\n\n• 🟢 North — 91% avg (3 active planograms)\n• 🟡 South — 86% avg (2 active planograms)\n• 🔴 East — 78% avg (1 active planogram) ← lowest\n• 🟡 West — 83% avg (2 active planograms)\n\nEast is your weakest region — the single active planogram there is missing 3 mandatory SKUs. Want me to generate an updated planogram for the East region?`,
+
+  'How do I edit an existing planogram?':
+    `To edit a planogram:\n\n1. Go to All Planograms → find your planogram → click the ✏️ Edit button\n2. This opens Planogram Studio where you can drag SKUs, adjust facings and reorganize shelves\n3. Changes auto-save as drafts — nothing goes live until approved\n4. When ready, click Submit for Approval to push it through the review queue\n\nTip: Use the AI Recommendations panel in Studio to get instant placement suggestions after edits.\n\nWant me to open a specific planogram for editing, or walk you through a particular change?`,
+
+  'How do I add a new SKU to an existing planogram?':
+    `To add a new SKU:\n\n1. Open the planogram in Planogram Studio\n2. In the right panel → go to the SKU Library tab\n3. Search for your SKU by name, brand or category\n4. Drag it onto any shelf slot — the AI highlights the best position in green\n5. Adjust facings using the + / − controls\n6. Save draft → submit for approval when ready\n\nIf the SKU doesn't appear in the library, you'll need to add it first via Asset & SKU Library → SKU Library → + Add SKU.\n\nWhich planogram and SKU do you want to add?`,
+
+  'How do I adjust SKU facings in a planogram?':
+    `To adjust facings:\n\n1. Open the planogram in Planogram Studio\n2. Click any SKU slot on the shelf\n3. In the inspector panel on the right, use the Facings slider or type a number directly\n4. Min/max facing limits are enforced — the AI won't let you go below the compliance minimum\n5. The utilization bar at the top updates live as you adjust\n\nFor bulk adjustments across a category, use the Category Caps slider in Step 3 when generating a new planogram.\n\nWant me to generate a new planogram with specific facing targets?`,
+
+  'How does the AI scoring algorithm work?':
+    `The AI uses a weighted scoring model across 4 KPIs:\n\n• 💰 Revenue — maximizes facings for high-margin, fast-moving SKUs\n• 📊 SOS (Share of Shelf) — ensures brand representation proportional to market share targets\n• ✅ Compliance — enforces mandatory SKU placement rules and minimums\n• 👁️ Eye-Level — prioritizes hero SKUs at the highest-attention shelf rows\n\nYou set the weights in Step 3 (or via chat). The algorithm places SKUs to maximize the combined weighted score. Higher revenue weight = more facing for premium SKUs. Higher compliance weight = stricter mandatory placement.\n\nWant me to build a planogram with a specific weight configuration?`,
+
+  'What is the difference between a Visicooler and Gondola?':
+    `Key differences:\n\n🍺 Visicooler (Beer Cooler)\n• Refrigerated, 6 shelves, 90×180cm\n• Best for chilled beverages — higher impulse-buy conversion\n• Typically near checkout or store entrance\n• UB portfolio: drives ~40% more volume per slot vs Gondola\n\n🗄️ Gondola\n• Ambient temperature, 4 shelves, 120×160cm\n• Best for ambient/canned products and gifting packs\n• Usually in the main store aisle — planned purchase behaviour\n\nRule of thumb: premium chilled beer → Visicooler. Premium ambient / gifting → Gondola.\n\nWant me to build a planogram for either fixture?`,
+
+  'What are best practices for eye-level SKU placement?':
+    `Eye-level (shelf rows 2–3 of 6) captures 60–70% of shopper attention. Best practices:\n\n👁️ Always place your mandatory SKUs here (Kingfisher Prem, Heineken 330ml)\n🚀 New launches benefit most — 2–3× more trial vs bottom shelf\n🔲 Keep hero SKU facings at 3+ at eye level for visual block impact\n⛔ Never place slow-moving or excluded SKUs at eye level\n✅ RSM visit rule: ALL mandatory SKUs must be at eye level minimum\n\nTip: use the Eye-Level weight slider in Step 3 to tell the AI how strictly to enforce this.\n\nWant me to build a compliance-ready planogram with strong eye-level configuration?`,
 }
 
-function parseAndApplyFullConfig(text: string) {
-  const configRe = /CONFIG:(\{[^\n]+\})/g
-  let match
-  while ((match = configRe.exec(text)) !== null) {
-    try {
-      const data = JSON.parse(match[1])
-      Object.entries(data).forEach(([field, value]) => {
-        if (field === 'assetId') {
-          const asset = store.assets.find(a => a.id === value)
-          if (asset) selectAsset(asset)
-        } else if (field === 'selectedCatKeys') {
-          ;(value as string[]).forEach(cat => { selectedCats[cat] = true })
-        } else if (field === 'weights') {
-          weights.value = value as any
-        } else if (field in objConfig) {
-          objConfig[field] = value
-        }
-      })
-    } catch {}
-  }
-  if (text.includes('READY:true')) fullChatReady.value = true
-  if (text.includes('GENERATE:true')) triggerGenerate()
-  return text.replace(/CONFIG:(\{[^\n]+\})/g, '').replace('READY:true', '').replace('GENERATE:true', '').trim()
+function detectIntent(text: string): 'build' | 'insights' | 'edit' | 'ask' {
+  if (/top perform|missing sku|compliance.*region|region.*compli|insights|analytics/i.test(text)) return 'insights'
+  if (/how do i|how to|edit.*plano|add.*sku|adjust.*facing|update.*plano/i.test(text)) return 'edit'
+  if (/how does|what is|difference|best pract|algorithm|scoring/i.test(text)) return 'ask'
+  return 'build'
 }
 
 async function startFullChat(initialText: string|null) {
   fullChatStarted.value = true
+  fullChatTurn.value = 0
+  fullChatMessages.value = []
+  activeSection.value = null
+  fullChatLoading.value = true
+  await new Promise(r => setTimeout(r, 700))
   if (initialText) {
+    chatIntent.value = detectIntent(initialText)
     fullChatMessages.value = [{ role: 'user', content: initialText }]
-    await sendFullChatApi([{ role: 'user', content: initialText }])
+    fullChatLoading.value = false
+    await runChatFlow(initialText)
   } else {
-    await sendFullChatApi([{ role: 'user', content: 'start' }])
+    chatIntent.value = 'build'
+    fullChatMessages.value = [{ role: 'assistant', content: "Hi! I'm your AI planogram assistant. Let's build a new planogram together — I'll ask a few questions and configure everything.\n\nWhat's the main business goal: revenue push, new product launch, RSM audit visit, or compliance?" }]
+    fullChatLoading.value = false
+    await nextTick()
+    if (fullChatScrollRef.value) fullChatScrollRef.value.scrollTop = fullChatScrollRef.value.scrollHeight
   }
 }
 
 async function sendFullChat(userText: string) {
   if (!userText.trim() || fullChatLoading.value) return
-  const history = [...fullChatMessages.value]
-  fullChatMessages.value = [...history, { role: 'user', content: userText }]
+  fullChatMessages.value = [...fullChatMessages.value, { role: 'user', content: userText }]
   fullChatInput.value = ''
-  await sendFullChatApi([...history, { role: 'user', content: userText }])
+  await runChatFlow(userText)
 }
 
-async function sendFullChatApi(apiMessages: any[]) {
+async function runChatFlow(userText: string) {
   fullChatLoading.value = true
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, system: fullChatSystemPrompt(), messages: apiMessages })
-    })
-    const data = await res.json()
-    const raw = data.content?.[0]?.text || 'Sorry, I had trouble connecting. Please try again.'
-    const clean = parseAndApplyFullConfig(raw)
-    if (clean) fullChatMessages.value = [...fullChatMessages.value, { role: 'assistant', content: clean }]
-  } catch {
-    fullChatMessages.value = [...fullChatMessages.value, { role: 'assistant', content: 'Connection issue — please try again.' }]
+  await new Promise(r => setTimeout(r, 800 + Math.random() * 500))
+
+  // Static response intents (insights / edit / ask)
+  if (chatIntent.value !== 'build') {
+    const staticReply = STATIC_RESPONSES[userText]
+    const reply = staticReply || "Great question! To get the most accurate answer, check the relevant section in the app — or start a planogram build and I'll configure everything step by step.\n\nWant to build a planogram now?"
+    fullChatMessages.value = [...fullChatMessages.value, { role: 'assistant', content: reply }]
+    // After answering, offer to build
+    if (!staticReply) chatIntent.value = 'build'
+    fullChatLoading.value = false
+    await nextTick()
+    if (fullChatScrollRef.value) fullChatScrollRef.value.scrollTop = fullChatScrollRef.value.scrollHeight
+    return
   }
+
+  // Build intent — step through CHAT_FLOW
+  const step = fullChatTurn.value
+  if (step >= CHAT_FLOW.length) {
+    fullChatLoading.value = false
+    return
+  }
+  const result = CHAT_FLOW[step](userText)
+  if (result.apply) result.apply()
+  if (result.ready) fullChatReady.value = true
+  fullChatMessages.value = [...fullChatMessages.value, { role: 'assistant', content: result.msg }]
+  fullChatTurn.value = step + 1
   fullChatLoading.value = false
   await nextTick()
   if (fullChatScrollRef.value) fullChatScrollRef.value.scrollTop = fullChatScrollRef.value.scrollHeight

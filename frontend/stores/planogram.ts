@@ -17,6 +17,10 @@ export interface SKU {
   front_packshot_url: string | null
   back_packshot_url:  string | null
   left_packshot_url:  string | null
+  tier?: string
+  faErpCode?: string
+  isActive?: boolean
+  trending?: boolean
 }
 
 export interface Planogram {
@@ -45,14 +49,14 @@ export const SKUS: SKU[] = [
   { id:2,  name:'Kingfisher Strong 650', brand:'Kingfisher', cat:'Strong',  variant:'650ml', w:7,  h:22, d:7,  minF:2, maxF:6, defaultF:3, mandatory:true,  color:'#2563EB', sku_code:'KIN-KINGFISHE', mandatory_flag:true,  front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:3,  name:'Heineken 330ml',        brand:'Heineken',   cat:'Lager',   variant:'330ml', w:6,  h:18, d:6,  minF:2, maxF:8, defaultF:4, mandatory:true,  color:'#16A34A', sku_code:'HEI-HEINEKEN3', mandatory_flag:true,  front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:4,  name:'Heineken 650ml',        brand:'Heineken',   cat:'Lager',   variant:'650ml', w:7,  h:24, d:7,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#15803D', sku_code:'HEI-HEINEKEN6', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
-  { id:5,  name:'KF Ultra 330ml',        brand:'Kingfisher', cat:'Premium', variant:'330ml', w:6,  h:18, d:6,  minF:2, maxF:6, defaultF:3, mandatory:false, color:'#7C3AED', sku_code:'KIN-KFULTRA33', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
+  { id:5,  name:'KF Ultra 330ml',        brand:'Kingfisher', cat:'Premium', variant:'330ml', w:6,  h:18, d:6,  minF:2, maxF:6, defaultF:3, mandatory:false, color:'#7C3AED', sku_code:'KIN-KFULTRA33', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null, trending:true },
   { id:6,  name:'KF Premium 330ml',      brand:'Kingfisher', cat:'Lager',   variant:'330ml', w:6,  h:18, d:6,  minF:2, maxF:8, defaultF:4, mandatory:false, color:'#3B82F6', sku_code:'KIN-KFPREMIUM', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:7,  name:'Amstel 330ml',          brand:'Amstel',     cat:'Lager',   variant:'330ml', w:6,  h:18, d:6,  minF:1, maxF:6, defaultF:3, mandatory:false, color:'#DC2626', sku_code:'AMS-AMSTEL330', mandatory_flag:false, front_packshot_url:'https://faiimagedetection.blob.core.windows.net/planogrammaster/packshots/amstel/Amster_330ml.jpg?sv=2023-01-03&st=2026-05-16T13%3A25%3A16Z&se=2027-06-17T13%3A25%3A00Z&sr=c&sp=racwdxlf&sig=Fca2jLmC6eRjORcDc%2FJ5Md5rDpugey1uxT2Becuo4lg%3D', back_packshot_url:null, left_packshot_url:null },
   { id:8,  name:'Heineken 0.0 330ml',    brand:'Heineken',   cat:'N/A',     variant:'330ml', w:6,  h:18, d:6,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#059669', sku_code:'HEI-HEINEKEN0', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:9,  name:'KF Storm 500ml',        brand:'Kingfisher', cat:'Strong',  variant:'500ml', w:6,  h:20, d:6,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#1E40AF', sku_code:'KIN-KFSTORM50', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:10, name:'KF Draught 330ml',      brand:'Kingfisher', cat:'Draught', variant:'330ml', w:6,  h:18, d:6,  minF:2, maxF:6, defaultF:3, mandatory:false, color:'#1E3A8A', sku_code:'KIN-KFDRAUGH3', mandatory_flag:false, front_packshot_url:null, back_packshot_url:null, left_packshot_url:null },
   { id:11, name:'Heineken Silver 330ml', brand:'Heineken',   cat:'Light',   variant:'330ml', w:6,  h:18, d:6,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#6EE7B7', sku_code:'HEI-HNKSilver', mandatory_flag:false, front_packshot_url:'https://faiimagedetection.blob.core.windows.net/planogrammaster/packshots/HNKSilver/HNK%20Silver%20330%20ml%20can.jpg?sv=2023-01-03&st=2026-05-16T13%3A25%3A16Z&se=2027-06-17T13%3A25%3A00Z&sr=c&sp=racwdxlf&sig=Fca2jLmC6eRjORcDc%2FJ5Md5rDpugey1uxT2Becuo4lg%3D', back_packshot_url:null, left_packshot_url:null },
-  { id:12, name:'KF Radler 330ml',       brand:'Kingfisher', cat:'Radler',  variant:'330ml', w:6,  h:18, d:6,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#FCD34D', sku_code:'KIN-KFRADLER3', mandatory_flag:false, front_packshot_url:'https://faiimagedetection.blob.core.windows.net/planogrammaster/packshots/KFPremium/KF%20330_PREMIUM.png?sv=2023-01-03&st=2026-05-16T13%3A25%3A16Z&se=2027-06-17T13%3A25%3A00Z&sr=c&sp=racwdxlf&sig=Fca2jLmC6eRjORcDc%2FJ5Md5rDpugey1uxT2Becuo4lg%3D', back_packshot_url:null, left_packshot_url:null },
+  { id:12, name:'KF Radler 330ml',       brand:'Kingfisher', cat:'Radler',  variant:'330ml', w:6,  h:18, d:6,  minF:1, maxF:4, defaultF:2, mandatory:false, color:'#FCD34D', sku_code:'KIN-KFRADLER3', mandatory_flag:false, front_packshot_url:'https://faiimagedetection.blob.core.windows.net/planogrammaster/packshots/KFPremium/KF%20330_PREMIUM.png?sv=2023-01-03&st=2026-05-16T13%3A25%3A16Z&se=2027-06-17T13%3A25%3A00Z&sr=c&sp=racwdxlf&sig=Fca2jLmC6eRjORcDc%2FJ5Md5rDpugey1uxT2Becuo4lg%3D', back_packshot_url:null, left_packshot_url:null, trending:true },
 ]
 
 const PLANOGRAMS_SEED: Planogram[] = [
@@ -182,9 +186,16 @@ export const usePlanogramStore = defineStore('planogram', () => {
     assets.value.push({ ...src, id: newId, name: `${src.name} (Copy)`, status: 'draft' })
   }
 
+  const preselectedSkuId = ref<number|null>(null)
+
   function addSKU(s: Omit<SKU, 'id'>) {
     const newId = Math.max(0, ...skus.value.map(x => x.id)) + 1
     skus.value.unshift({ ...s, id: newId })
+  }
+
+  function updateSKU(id: number, changes: Partial<SKU>) {
+    const idx = skus.value.findIndex(s => s.id === id)
+    if (idx >= 0) skus.value[idx] = { ...skus.value[idx], ...changes }
   }
 
   function updateSKUPackshots(id: number, urls: { front?: string|null; back?: string|null; left?: string|null }) {
@@ -202,5 +213,5 @@ export const usePlanogramStore = defineStore('planogram', () => {
     idealImages.value[assetId][view] = url
   }
 
-  return { planograms, assets, skus, idealImages, addPlanogram, updatePlanogram, deletePlanogram, duplicatePlanogram, toggleStatus, addAsset, updateAsset, deleteAsset, duplicateAsset, addSKU, updateSKUPackshots, updateIdealImage }
+  return { planograms, assets, skus, idealImages, preselectedSkuId, addPlanogram, updatePlanogram, deletePlanogram, duplicatePlanogram, toggleStatus, addAsset, updateAsset, deleteAsset, duplicateAsset, addSKU, updateSKU, updateSKUPackshots, updateIdealImage }
 })
