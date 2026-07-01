@@ -21,6 +21,9 @@ export interface SKU {
   faErpCode?: string
   isActive?: boolean
   trending?: boolean
+  primaryCat?: string
+  secondaryCat?: string
+  displayCat?: string
 }
 
 export interface Planogram {

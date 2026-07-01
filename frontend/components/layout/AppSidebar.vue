@@ -71,24 +71,6 @@
         </NuxtLink>
       </div>
 
-      <!-- Divider -->
-      <div style="height:1px;background:rgba(255,255,255,0.05);margin:10px 4px;"></div>
-
-      <!-- Tasks & Approvals -->
-      <NuxtLink to="/tasks"
-        style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;margin-bottom:1px;text-decoration:none;transition:all 0.12s;"
-        :style="isActive('/tasks') ? 'background:rgba(79,70,229,0.18);color:#818CF8;' : 'color:#4B5563;'"
-        @mouseenter="(e:any)=>{if(!isActive('/tasks'))e.currentTarget.style.background='rgba(255,255,255,0.04)'}"
-        @mouseleave="(e:any)=>{if(!isActive('/tasks'))e.currentTarget.style.background='transparent'}"
-      >
-        <CheckSquare :size="13" style="flex-shrink:0;" />
-        <span style="font-size:12px;font-weight:400;flex:1;">Tasks & Approvals</span>
-        <span v-if="pendingCount > 0"
-          style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;background:rgba(245,158,11,0.2);color:#FCD34D;min-width:18px;text-align:center;">
-          {{ pendingCount }}
-        </span>
-      </NuxtLink>
-
     </nav>
 
     <!-- User profile -->
@@ -115,8 +97,8 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Home, LayoutGrid, ClipboardList, SlidersHorizontal, Move,
-  BarChart2, CheckSquare, ChevronDown, Package, ChevronsUpDown, Sparkles
+  Home, LayoutGrid, ClipboardList, Move,
+  BarChart2, ChevronDown, Package, ChevronsUpDown, Sparkles, Settings
 } from 'lucide-vue-next'
 import { usePlanogramStore } from '~/stores/planogram'
 
@@ -125,20 +107,15 @@ const store  = usePlanogramStore()
 const planogramsOpen = ref(true)
 
 const planogramSubs = [
-  { to: '/library',       label: 'Asset & SKU Library', icon: Package,           highlight: false },
-  { to: '/ai-generator',  label: 'Generate with AI',    icon: Sparkles,          highlight: true  },
-  { to: '/configs',       label: 'All Planograms',      icon: ClipboardList,     highlight: false },
-  { to: '/studio',        label: 'Planogram Studio',    icon: SlidersHorizontal, highlight: false },
-  { to: '/workspace',     label: 'Planogram Builder',   icon: Move,              highlight: false },
+  { to: '/library',          label: 'Library', icon: Package,       highlight: false },
+  { to: '/ai-generator',     label: 'Generate with AI',    icon: Sparkles,      highlight: true  },
+  { to: '/configs',          label: 'All Planograms',      icon: ClipboardList, highlight: false },
+  { to: '/new-planogram',    label: 'Create Planogram',    icon: Move,          highlight: false },
 ]
 
 const mainNavItems = [
   { to: '/analytics', label: 'Analytics', icon: BarChart2 },
 ]
-
-const pendingCount = computed(() =>
-  store.planograms.filter(p => p.status === 'pending').length
-)
 
 const isPlanogramsSection = computed(() =>
   planogramSubs.some(s => isActive(s.to))

@@ -161,10 +161,6 @@
                 <div style="font-size:11px;color:#94A3B8;margin-top:4px;">{{ d.hint }}</div>
               </div>
             </div>
-            <div style="margin-top:20px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 16px;display:flex;gap:10px;">
-              <CheckCircle :size="16" color="#10B981" style="flex-shrink:0;margin-top:1px;"/>
-              <div style="font-size:12px;color:#065F46;">Dimensions are validated against selected asset shelf depth and height during planogram generation.</div>
-            </div>
           </div>
 
           <!-- ── RULES TAB ───────────────────────────────────────────────── -->
@@ -207,16 +203,6 @@
                   {{ t.label }}
                 </button>
               </div>
-            </div>
-            <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
-              <div style="flex:1;">
-                <div style="font-size:13px;font-weight:700;color:#0F172A;margin-bottom:2px;">Mandatory SKU</div>
-                <div style="font-size:12px;color:#64748B;">Must appear in all planograms for configured outlet. Absence triggers a validation error.</div>
-              </div>
-              <button @click="modalMandatory=!modalMandatory" style="background:transparent;border:none;cursor:pointer;padding:0;">
-                <ToggleRight v-if="modalMandatory" :size="36" color="#3B82F6"/>
-                <ToggleLeft v-else :size="36" color="#CBD5E1"/>
-              </button>
             </div>
           </div>
 
@@ -263,133 +249,20 @@
 
     <!-- Toolbar -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-      <div style="display:flex;background:#F1F5F9;border-radius:8px;padding:3px;">
-        <button v-for="[id,label] in [['assets','Retail Assets'],['skus','SKU Library'],['stores','Stores']]" :key="id"
-          @click="tab=id"
-          :style="`padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:${tab===id?600:400};background:${tab===id?'white':'transparent'};color:${tab===id?'#0F172A':'#64748B'};box-shadow:${tab===id?'0 1px 3px rgba(0,0,0,0.1)':'none'};transition:all 0.15s;`">
-          {{ label }}
-        </button>
-      </div>
+      <div style="font-size:15px;font-weight:700;color:#0F172A;">Library</div>
       <div style="display:flex;align-items:center;gap:8px;background:white;border:1px solid #E2E8F0;border-radius:8px;padding:6px 12px;flex:1;max-width:280px;">
         <Search :size="14" color="#94A3B8"/>
-        <input v-model="search" :placeholder="`Search ${tab==='assets'?'assets':tab==='stores'?'stores':'SKUs'}...`"
+        <input v-model="search" placeholder="Search SKUs..."
           style="border:none;background:transparent;font-size:13px;outline:none;flex:1;color:#334155;"/>
       </div>
-      <div v-if="tab==='skus'" style="display:flex;gap:5px;flex-wrap:wrap;">
-        <button v-for="c in cats" :key="c" @click="catFilter=c"
-          :style="`padding:5px 10px;border-radius:20px;border:1.5px solid ${catFilter===c?'#3B82F6':'#E2E8F0'};background:${catFilter===c?'#EFF6FF':'white'};color:${catFilter===c?'#1D4ED8':'#475569'};font-size:11px;font-weight:${catFilter===c?600:400};cursor:pointer;`">
-          {{ c }}
-        </button>
-      </div>
-      <button style="display:flex;align-items:center;gap:6px;background:white;border:1px solid #E2E8F0;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;color:#475569;">
-        <Filter :size="14"/> Filter
-      </button>
-      <button @click="tab==='skus' ? openModal() : tab==='stores' ? openOutletModal() : openAssetModal()"
+      <button @click="openModal()"
         style="display:flex;align-items:center;gap:6px;background:#3B82F6;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;">
-        <Plus :size="14"/> Add {{ tab==='assets'?'Asset':tab==='stores'?'Store':'SKU' }}
+        <Plus :size="14"/> Add SKU
       </button>
-    </div>
-
-    <!-- Assets tab -->
-    <div v-if="tab==='assets'" style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
-      <div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;">
-          <div v-for="a in filteredAssets" :key="a.id"
-            @click="selAsset=a"
-            :style="`background:white;border:1.5px solid ${selAsset?.id===a.id?'#3B82F6':'#E2E8F0'};border-radius:12px;padding:16px;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 3px rgba(15,23,42,0.04);`"
-            @mouseenter="e=>(e.currentTarget as HTMLElement).style.boxShadow='0 4px 16px rgba(15,23,42,0.08)'"
-            @mouseleave="e=>(e.currentTarget as HTMLElement).style.boxShadow='0 1px 3px rgba(15,23,42,0.04)'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-              <div style="font-size:28px;">{{ a.img }}</div>
-              <div style="display:flex;align-items:center;gap:5px;">
-                <span :style="`display:flex;align-items:center;gap:4px;background:${a.status==='active'?'#F0FDF4':'#FFFBEB'};padding:3px 8px;border-radius:4px;`">
-                  <div :style="`width:5px;height:5px;border-radius:50%;background:${a.status==='active'?'#10B981':'#F59E0B'};`"/>
-                  <span :style="`font-size:10px;font-weight:600;color:${a.status==='active'?'#065F46':'#92400E'};`">{{ a.status }}</span>
-                </span>
-                <!-- ··· menu -->
-                <div style="position:relative;" @click.stop>
-                  <button @click="activeMenu=activeMenu===a.id?null:a.id"
-                    style="background:transparent;border:none;cursor:pointer;padding:3px 4px;border-radius:4px;display:flex;align-items:center;color:#94A3B8;"
-                    @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#F1F5F9'"
-                    @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                    <MoreHorizontal :size="15"/>
-                  </button>
-                  <div v-if="activeMenu===a.id"
-                    style="position:absolute;right:0;top:calc(100% + 2px);background:white;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,0.12);z-index:50;min-width:140px;overflow:hidden;">
-                    <button @click="openAssetModal(a);activeMenu=null"
-                      style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#334155;text-align:left;"
-                      @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#F8FAFC'"
-                      @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                      <Pencil :size="13" color="#64748B"/> Edit
-                    </button>
-                    <button @click="store.duplicateAsset(a.id);activeMenu=null"
-                      style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#334155;text-align:left;"
-                      @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#F8FAFC'"
-                      @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                      <Copy :size="13" color="#64748B"/> Duplicate
-                    </button>
-                    <div style="height:1px;background:#F1F5F9;"/>
-                    <button @click="confirmDelete(a,'asset');activeMenu=null"
-                      style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#EF4444;text-align:left;"
-                      @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#FEF2F2'"
-                      @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                      <Trash2 :size="13" color="#EF4444"/> Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:3px;">{{ a.name }}</div>
-            <div style="font-size:12px;color:#64748B;margin-bottom:10px;">{{ a.type }}</div>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;">
-              <span style="background:#EFF6FF;color:#1D4ED8;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;">{{ a.shelves }} shelves</span>
-              <span style="background:#F8FAFC;color:#475569;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;">{{ a.w }}×{{ a.h }}cm</span>
-              <span style="background:#F8FAFC;color:#475569;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;">{{ a.region }}</span>
-            </div>
-          </div>
-        </div>
-        <div style="margin-top:20px;border:2px dashed #CBD5E1;border-radius:12px;padding:28px 24px;text-align:center;background:#F8FAFC;cursor:pointer;transition:all 0.15s;"
-          @click="openAssetModal()"
-          @mouseenter="e=>{(e.currentTarget as HTMLElement).style.borderColor='#3B82F6';(e.currentTarget as HTMLElement).style.background='#EFF6FF';}"
-          @mouseleave="e=>{(e.currentTarget as HTMLElement).style.borderColor='#CBD5E1';(e.currentTarget as HTMLElement).style.background='#F8FAFC';}">
-          <Upload :size="22" color="#94A3B8" style="margin:0 auto 8px;display:block;"/>
-          <div style="font-size:14px;font-weight:600;color:#334155;margin-bottom:3px;">Add a new asset</div>
-          <div style="font-size:12px;color:#94A3B8;">Click to fill out asset details</div>
-        </div>
-      </div>
-      <div>
-        <div v-if="selAsset" style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:20px;position:sticky;top:80px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
-            <div style="font-size:28px;">{{ selAsset.img }}</div>
-            <button @click="selAsset=null" style="background:transparent;border:none;cursor:pointer;"><X :size="16" color="#94A3B8"/></button>
-          </div>
-          <div style="font-weight:700;font-size:16px;color:#0F172A;margin-bottom:6px;">{{ selAsset.name }}</div>
-          <span style="background:#EFF6FF;color:#1D4ED8;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;">{{ selAsset.type }}</span>
-          <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div v-for="[k,v] in [['Shelves',selAsset.shelves],['Width',selAsset.w+'cm'],['Height',selAsset.h+'cm'],['Depth',selAsset.d+'cm'],['Region',selAsset.region],['Status',selAsset.status]]" :key="k"
-              style="background:#F8FAFC;border-radius:8px;padding:10px;">
-              <div style="font-size:11px;color:#94A3B8;margin-bottom:2px;">{{ k }}</div>
-              <div style="font-size:13px;font-weight:700;color:#0F172A;">{{ v }}</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:16px;">
-            <button @click="openAssetModal(selAsset)"
-              style="flex:1;background:#F8FAFC;color:#334155;border:1px solid #E2E8F0;border-radius:8px;padding:8px 0;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <Pencil :size="13"/> Edit Asset
-            </button>
-            <button style="flex:1;background:#3B82F6;color:white;border:none;border-radius:8px;padding:9px 0;font-size:13px;font-weight:600;cursor:pointer;">Use in Studio</button>
-          </div>
-        </div>
-        <div v-else style="background:#F8FAFC;border:1.5px dashed #E2E8F0;border-radius:12px;padding:40px;text-align:center;color:#94A3B8;">
-          <Package :size="32" style="margin:0 auto 12px;display:block;"/>
-          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Select an asset</div>
-          <div style="font-size:12px;">Click a card to view details</div>
-        </div>
-      </div>
     </div>
 
     <!-- SKUs tab -->
-    <div v-else-if="tab==='skus'" style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
 
       <!-- Left: SKU card grid -->
       <div>
@@ -413,7 +286,6 @@
               <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap;">
                   <div style="font-weight:700;font-size:13px;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ s.name }}</div>
-                  <span v-if="s.mandatory" style="background:#FEF2F2;color:#991B1B;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;">Mandatory</span>
                 </div>
                 <div style="font-size:11px;color:#64748B;margin-bottom:6px;">{{ s.brand }} · {{ s.cat }} · {{ s.variant }}</div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
@@ -524,168 +396,6 @@
         <div v-else style="background:#F8FAFC;border:1.5px dashed #E2E8F0;border-radius:12px;padding:40px;text-align:center;color:#94A3B8;">
           <Package :size="32" style="margin:0 auto 12px;display:block;"/>
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Select a SKU</div>
-          <div style="font-size:12px;">Click a card to view details</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════════════ -->
-    <!-- STORES TAB                                                        -->
-    <!-- ══════════════════════════════════════════════════════════════════ -->
-    <div v-else-if="tab==='stores'" style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
-
-      <!-- Left: outlet card list -->
-      <div>
-        <!-- Channel filter pills -->
-        <div style="display:flex;gap:6px;margin-bottom:14px;">
-          <button v-for="ch in ['All','MT','GT']" :key="ch" @click="outletChannelFilter=ch"
-            :style="`padding:5px 12px;border-radius:20px;border:1.5px solid ${outletChannelFilter===ch?'#3B82F6':'#E2E8F0'};background:${outletChannelFilter===ch?'#EFF6FF':'white'};color:${outletChannelFilter===ch?'#1D4ED8':'#475569'};font-size:11px;font-weight:${outletChannelFilter===ch?600:400};cursor:pointer;`">
-            {{ ch }}
-          </button>
-          <button v-for="r in outletRegions" :key="r" @click="outletRegionFilter=outletRegionFilter===r?'All':r"
-            :style="`padding:5px 12px;border-radius:20px;border:1.5px solid ${outletRegionFilter===r?'#7C3AED':'#E2E8F0'};background:${outletRegionFilter===r?'#F5F3FF':'white'};color:${outletRegionFilter===r?'#6D28D9':'#475569'};font-size:11px;font-weight:${outletRegionFilter===r?600:400};cursor:pointer;`">
-            {{ r }}
-          </button>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">
-          <div v-for="o in filteredOutlets" :key="o.id"
-            @click="selOutlet=o"
-            :style="`background:white;border:1.5px solid ${selOutlet?.id===o.id?'#3B82F6':'#E2E8F0'};border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;`"
-            @mouseenter="e=>(e.currentTarget as HTMLElement).style.borderColor=(selOutlet?.id===o.id?'#3B82F6':'#CBD5E1')"
-            @mouseleave="e=>(e.currentTarget as HTMLElement).style.borderColor=(selOutlet?.id===o.id?'#3B82F6':'#E2E8F0')">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-              <div style="display:flex;align-items:center;gap:7px;">
-                <span :style="`padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;${o.channel==='MT'?'background:#EFF6FF;color:#1D4ED8;':'background:#F0FDF4;color:#065F46;'}`">
-                  {{ o.channel }}
-                </span>
-                <span :style="`display:flex;align-items:center;gap:4px;background:${o.status==='active'?'#F0FDF4':'#F8FAFC'};padding:3px 7px;border-radius:4px;`">
-                  <div :style="`width:5px;height:5px;border-radius:50%;background:${o.status==='active'?'#10B981':'#CBD5E1'};`"/>
-                  <span :style="`font-size:10px;font-weight:600;color:${o.status==='active'?'#065F46':'#94A3B8'};`">{{ o.status }}</span>
-                </span>
-              </div>
-              <!-- ··· menu -->
-              <div style="position:relative;" @click.stop>
-                <button @click="activeMenu=activeMenu===o.id?null:o.id"
-                  style="background:transparent;border:none;cursor:pointer;padding:3px 4px;border-radius:4px;display:flex;align-items:center;color:#94A3B8;"
-                  @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#F1F5F9'"
-                  @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                  <MoreHorizontal :size="15"/>
-                </button>
-                <div v-if="activeMenu===o.id"
-                  style="position:absolute;right:0;top:calc(100% + 2px);background:white;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,0.12);z-index:50;min-width:130px;overflow:hidden;">
-                  <button @click="openOutletModal(o);activeMenu=null"
-                    style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#334155;text-align:left;"
-                    @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#F8FAFC'"
-                    @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                    <Pencil :size="13" color="#64748B"/> Edit
-                  </button>
-                  <div style="height:1px;background:#F1F5F9;"/>
-                  <button @click="confirmDelete(o,'outlet');activeMenu=null"
-                    style="display:flex;align-items:center;gap:8px;width:100%;padding:9px 14px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#EF4444;text-align:left;"
-                    @mouseenter="(e)=>(e.currentTarget as HTMLElement).style.background='#FEF2F2'"
-                    @mouseleave="(e)=>(e.currentTarget as HTMLElement).style.background='transparent'">
-                    <Trash2 :size="13" color="#EF4444"/> Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div style="font-weight:700;font-size:14px;color:#0F172A;margin-bottom:2px;">{{ o.name }}</div>
-            <div style="font-size:12px;color:#64748B;margin-bottom:10px;">{{ o.city }} · {{ o.region }}</div>
-
-            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
-              <span style="background:#F5F3FF;color:#6D28D9;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;">Tier {{ o.tier }}</span>
-              <span style="background:#F8FAFC;color:#475569;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;">{{ o.format }}</span>
-              <span style="background:#F0F9FF;color:#0369A1;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;">{{ o.assets.length }} fixture{{ o.assets.length!==1?'s':'' }}</span>
-            </div>
-          </div>
-
-          <!-- Add store dashed card -->
-          <div @click="openOutletModal()"
-            style="border:1.5px dashed #E2E8F0;border-radius:10px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:#94A3B8;min-height:120px;transition:all 0.15s;"
-            @mouseenter="e=>{(e.currentTarget as HTMLElement).style.borderColor='#3B82F6';(e.currentTarget as HTMLElement).style.color='#3B82F6';}"
-            @mouseleave="e=>{(e.currentTarget as HTMLElement).style.borderColor='#E2E8F0';(e.currentTarget as HTMLElement).style.color='#94A3B8';}">
-            <Plus :size="20"/><div style="font-size:13px;font-weight:500;">Add Store</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: outlet detail panel -->
-      <div>
-        <div v-if="selOutlet" style="background:white;border:1px solid #E2E8F0;border-radius:12px;padding:20px;position:sticky;top:80px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-            <div>
-              <span :style="`padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;${selOutlet.channel==='MT'?'background:#EFF6FF;color:#1D4ED8;':'background:#F0FDF4;color:#065F46;'}`">
-                {{ selOutlet.channel }}
-              </span>
-            </div>
-            <button @click="selOutlet=null" style="background:transparent;border:none;cursor:pointer;"><X :size="16" color="#94A3B8"/></button>
-          </div>
-
-          <div style="font-weight:700;font-size:16px;color:#0F172A;margin-bottom:3px;">{{ selOutlet.name }}</div>
-          <div style="font-size:12px;color:#94A3B8;font-family:monospace;margin-bottom:4px;">{{ selOutlet.code }}</div>
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:14px;">
-            <div :style="`width:6px;height:6px;border-radius:50%;background:${selOutlet.status==='active'?'#10B981':'#CBD5E1'};`"/>
-            <span :style="`font-size:11px;font-weight:600;color:${selOutlet.status==='active'?'#065F46':'#94A3B8'};`">{{ selOutlet.status }}</span>
-          </div>
-
-          <div style="height:1px;background:#E2E8F0;margin-bottom:14px;"/>
-
-          <!-- Attribute grid -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-            <div v-for="[k,v] in [['Channel',selOutlet.channel],['Region',selOutlet.region],['City',selOutlet.city],['Tier','Tier '+selOutlet.tier],['Format',selOutlet.format],['Manager',selOutlet.manager]]" :key="k"
-              style="background:#F8FAFC;border-radius:8px;padding:10px;">
-              <div style="font-size:11px;color:#94A3B8;margin-bottom:2px;">{{ k }}</div>
-              <div style="font-size:12px;font-weight:700;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ v }}</div>
-            </div>
-          </div>
-
-          <!-- Installed assets -->
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:8px;">Installed Assets</div>
-            <div v-if="selOutlet.assets.length" style="display:flex;flex-direction:column;gap:5px;">
-              <div v-for="oa in selOutlet.assets" :key="oa.assetId"
-                style="display:flex;align-items:center;gap:8px;background:#F8FAFC;border-radius:7px;padding:8px 10px;">
-                <span style="font-size:16px;">{{ store.assets.find(a=>a.id===oa.assetId)?.img || '🏬' }}</span>
-                <span style="font-size:12px;color:#334155;flex:1;">{{ store.assets.find(a=>a.id===oa.assetId)?.name || '—' }}</span>
-                <span style="font-size:11px;font-weight:700;color:#475569;background:#E2E8F0;padding:2px 7px;border-radius:4px;">×{{ oa.quantity }}</span>
-              </div>
-            </div>
-            <div v-else style="font-size:12px;color:#94A3B8;padding:8px 0;">No fixtures assigned yet</div>
-          </div>
-
-          <!-- Assigned planograms -->
-          <div style="margin-bottom:16px;">
-            <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:8px;">Assigned Planograms</div>
-            <div v-if="selOutlet.planogramIds.length" style="display:flex;flex-direction:column;gap:4px;">
-              <div v-for="pid in selOutlet.planogramIds" :key="pid"
-                style="display:flex;align-items:center;gap:6px;background:#F8FAFC;border-radius:7px;padding:7px 10px;">
-                <span style="font-size:14px;">{{ store.planograms.find(p=>p.id===pid)?.assetImg || '📋' }}</span>
-                <span style="font-size:12px;color:#334155;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                  {{ store.planograms.find(p=>p.id===pid)?.name || 'Planogram #'+pid }}
-                </span>
-              </div>
-            </div>
-            <div v-else style="font-size:12px;color:#94A3B8;padding:8px 0;">No planograms assigned yet</div>
-          </div>
-
-          <!-- Actions -->
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <button @click="openOutletModal(selOutlet)"
-              style="width:100%;background:white;color:#334155;border:1px solid #E2E8F0;border-radius:8px;padding:9px 0;font-size:13px;font-weight:600;cursor:pointer;">
-              Edit Store
-            </button>
-            <button @click="openOutletModal(selOutlet);outletTab='planograms'"
-              style="width:100%;background:#3B82F6;color:white;border:none;border-radius:8px;padding:9px 0;font-size:13px;font-weight:600;cursor:pointer;">
-              + Assign Planogram
-            </button>
-          </div>
-        </div>
-
-        <div v-else style="background:#F8FAFC;border:1.5px dashed #E2E8F0;border-radius:12px;padding:40px;text-align:center;color:#94A3B8;">
-          <Store :size="32" style="margin:0 auto 12px;display:block;"/>
-          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Select a store</div>
           <div style="font-size:12px;">Click a card to view details</div>
         </div>
       </div>
@@ -858,7 +568,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive } from 'vue'
-import { Package, Search, Filter, Plus, Upload, X, CheckCircle, ToggleLeft, ToggleRight, MoreHorizontal, Pencil, Copy, Trash2, Store } from 'lucide-vue-next'
+import { Package, Search, Plus, Upload, X, ToggleLeft, ToggleRight, MoreHorizontal, Pencil, Copy, Trash2 } from 'lucide-vue-next'
 import { usePlanogramStore, appendSas } from '~/stores/planogram'
 import { useOutletStore, OUTLET_FORMATS } from '~/stores/outlets'
 import { useAzureBlob } from '~/composables/useAzureBlob'
@@ -894,12 +604,14 @@ function tierStyle(tier: string | undefined) {
 }
 
 // ── page state ────────────────────────────────────────────────────────────────
-const tab          = ref('assets')
+const tab          = ref('skus')
 const search       = ref('')
 const selAsset     = ref<any>(null)
 const selSku       = ref<any>(null)
 const showModal    = ref(false)
-const catFilter    = ref('All')
+const primaryFilter    = ref('')
+const secondaryFilter  = ref('')
+const displayCatFilter = ref('')
 const skuTab       = ref('packshot')
 const saveError    = ref('')
 const activeMenu   = ref<number|null>(null)
@@ -1000,11 +712,14 @@ const facingFields = computed(() => [
 ])
 
 const metaInputs = [
-  { key:'name',      label:'SKU Name',  placeholder:'e.g. Amstel 330ml' },
-  { key:'brand',     label:'Brand',     placeholder:'e.g. Amstel' },
-  { key:'cat',       label:'Category',  placeholder:'e.g. Lager' },
-  { key:'variant',   label:'Variant',   placeholder:'e.g. 330ml can' },
-  { key:'faErpCode', label:'ERP Code',  placeholder:'e.g. FA-12345' },
+  { key:'name',        label:'SKU Name',         placeholder:'e.g. Amstel 330ml' },
+  { key:'brand',       label:'Brand',             placeholder:'e.g. Amstel' },
+  { key:'cat',         label:'Category',          placeholder:'e.g. Lager' },
+  { key:'variant',     label:'Variant',           placeholder:'e.g. 330ml can' },
+  { key:'primaryCat',  label:'Primary',           placeholder:'e.g. Beer' },
+  { key:'secondaryCat',label:'Secondary',         placeholder:'e.g. Premium Lager' },
+  { key:'displayCat',  label:'Display Category',  placeholder:'e.g. Cold Shelf' },
+  { key:'faErpCode',   label:'ERP Code',          placeholder:'e.g. FA-12345' },
 ]
 
 // ── blob state helper ─────────────────────────────────────────────────────────
@@ -1263,7 +978,9 @@ function useInPlanogram(sku: any) {
 }
 
 // ── filtered data ─────────────────────────────────────────────────────────────
-const cats = computed(() => ['All', ...Array.from(new Set(store.skus.map(s => s.cat)))])
+const primaryCats    = computed(() => Array.from(new Set(store.skus.map(s => s.primaryCat).filter(Boolean))))
+const secondaryCats  = computed(() => Array.from(new Set(store.skus.map(s => s.secondaryCat).filter(Boolean))))
+const displayCats    = computed(() => Array.from(new Set(store.skus.map(s => s.displayCat).filter(Boolean))))
 
 const outletRegions = computed(() =>
   Array.from(new Set(outletStore.outlets.map(o => o.region))).sort()
@@ -1295,7 +1012,9 @@ const filteredAssets = computed(() =>
 
 const filteredSKUs = computed(() =>
   store.skus.filter(s =>
-    (catFilter.value === 'All' || s.cat === catFilter.value) &&
+    (!primaryFilter.value    || s.primaryCat    === primaryFilter.value) &&
+    (!secondaryFilter.value  || s.secondaryCat  === secondaryFilter.value) &&
+    (!displayCatFilter.value || s.displayCat    === displayCatFilter.value) &&
     (s.name.toLowerCase().includes(search.value.toLowerCase()) || s.brand.toLowerCase().includes(search.value.toLowerCase()))
   )
 )

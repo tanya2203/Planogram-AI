@@ -203,7 +203,7 @@
           <!-- Create Planogram PRIMARY -->
           <div style="position:relative;">
             <div style="display:flex;border-radius:9px;overflow:hidden;box-shadow:0 2px 8px rgba(79,70,229,0.3);">
-              <button @click="router.push('/studio')"
+              <button @click="router.push('/new-planogram')"
                 style="display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#4F46E5,#6366F1);color:white;border:none;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.15);">
                 <Plus :size="14"/>Create Planogram
               </button>
@@ -213,7 +213,7 @@
               </button>
             </div>
             <div v-if="showNewMenu" style="position:absolute;right:0;top:calc(100% + 6px);background:white;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 6px 28px rgba(15,23,42,0.14);z-index:89;min-width:224px;overflow:hidden;padding:4px 0;">
-              <button @click="showNewMenu=false;router.push('/studio')" class="dmitem">
+              <button @click="showNewMenu=false;router.push('/new-planogram')" class="dmitem">
                 <Move :size="14" color="#64748B" style="flex-shrink:0;"/>
                 <div><div style="font-weight:600;font-size:13px;color:#0F172A;">Manual Setup</div><div style="font-size:11px;color:#94A3B8;margin-top:1px;">Configure and place SKUs yourself</div></div>
               </button>
@@ -300,7 +300,7 @@
           <button @click="router.push('/ai-generator')" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#4F46E5,#7C3AED);color:white;border:none;border-radius:9px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;">
             <Sparkles :size="14"/>Generate with AI
           </button>
-          <button @click="router.push('/studio')" style="display:inline-flex;align-items:center;gap:7px;background:white;color:#475569;border:1px solid #E2E8F0;border-radius:9px;padding:10px 22px;font-size:13px;font-weight:500;cursor:pointer;">
+          <button @click="router.push('/new-planogram')" style="display:inline-flex;align-items:center;gap:7px;background:white;color:#475569;border:1px solid #E2E8F0;border-radius:9px;padding:10px 22px;font-size:13px;font-weight:500;cursor:pointer;">
             <Plus :size="14"/>Create Manually
           </button>
         </div>
@@ -624,7 +624,7 @@ function toggleMenu(id: number, e: MouseEvent) {
   openMenuId.value=id
 }
 
-function handleEdit() { detailsTarget.value=null; router.push('/studio') }
+function handleEdit() { detailsTarget.value=null; router.push('/new-planogram') }
 function handleToggle(p: Planogram) {
   const next=p.status==='active'?'inactive':'active'
   store.updatePlanogram(p.id,{status:next as Planogram['status']})
